@@ -355,13 +355,14 @@ defmodule Auth2ApiEx.Upstream.CodexAPI do
     end
   end
 
+  # Matching sub2api DefaultOpenAICodexUserAgent — codex-tui is less likely
+  # to be flagged than generic codex_cli_rs by newer Cloudflare rules.
+  @default_ua "codex-tui/0.125.0 (Ubuntu 22.4.0; x86_64) xterm-256color (codex-tui; 0.125.0)"
+
   defp build_user_agent(codex_cfg) do
     case Map.get(codex_cfg, "user-agent") do
       nil ->
-        originator = Map.get(codex_cfg, "originator", @default_originator)
-        version = Map.get(codex_cfg, "cli-version", @default_cli_version)
-        {platform, arch} = detect_platform()
-        "#{originator}/#{version} (#{platform}; #{arch})"
+        @default_ua
 
       ua ->
         ua
