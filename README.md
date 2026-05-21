@@ -1,6 +1,6 @@
-# auth2api_ex-elixir
+# auth2api_ex
 
-auth2api_ex-elixir is an Elixir implementation of an OAuth-to-API proxy. It supports two upstreams: Anthropic API via Claude OAuth tokens, and the chatgpt.com backend (GPT-5.x family) via Codex/OpenAI OAuth tokens. It accepts both OpenAI-compatible and Anthropic-native request formats.
+auth2api_ex is an Elixir implementation of an OAuth-to-API proxy. It supports two upstreams: Anthropic API via Claude OAuth tokens, and the chatgpt.com backend (GPT-5.x family) via Codex/OpenAI OAuth tokens. It accepts both OpenAI-compatible and Anthropic-native request formats.
 
 中文说明见 [README_CN.md](README_CN.md).
 

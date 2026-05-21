@@ -1,4 +1,4 @@
-# auth2api_ex-elixir
+# auth2api_ex
 
 这是一个将 OAuth 授权转换为 API 代理的 Elixir 实现。支持两种上游：使用 Claude OAuth token 转发到 Anthropic API，以及使用 Codex/OpenAI OAuth token 转发到 chatgpt.com 后端（GPT-5.x 系列）。它接受 OpenAI 兼容格式和 Anthropic 原生格式的请求。
 
