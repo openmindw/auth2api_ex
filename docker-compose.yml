@@ -1,0 +1,14 @@
+services:
+  auth2api_ex:
+    build: .
+    ports:
+      - "8318:8318"
+    volumes:
+      - ./config.yaml:/config/config.yaml
+      - auth-data:/data
+    environment:
+      - AUTH2API_CONFIG=/config/config.yaml
+    restart: unless-stopped
+
+volumes:
+  auth-data:

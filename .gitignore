@@ -1,0 +1,47 @@
+# Mix build artifacts
+/_build/
+/cover/
+/deps/
+/.fetch
+
+# Config with secrets
+/config.yaml
+/elixir/config.yaml
+/scripts/deploy.toml
+
+# Internal tooling
+.pi/
+.claude/
+backups/
+
+# Node.js (legacy)
+node_modules/
+dist/
+
+# Logs and env
+*.log
+.env
+erl_crash.dump
+
+# OS
+.DS_Store
+
+# Factory / IDE artifacts
+config.json
+events.jsonl
+views.json
+labels/
+sessions/
+statuses/
+skills/
+sources/
+
+# Archive artifacts
+*.ez
+
+# Temp
+/tmp/
+
+./pi
+priv/version.json
+DEBUG.md

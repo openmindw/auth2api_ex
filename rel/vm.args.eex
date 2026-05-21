@@ -1,0 +1,17 @@
+# rel/vm.args.eex — VM arguments for auth2api_ex release
+#
+# Evaluated at release build time; variables like <%= @release.name %> are available.
+# Runs under systemd / Docker without a TTY → -noshell required for OTP 28+.
+
+-noshell
+-noinput
+
+## Increase number of concurrent ports/sockets
++Q 65536
+
+## Tweak GC to run more often (optional)
+##-env ERL_FULLSWEEP_AFTER 10
+
+## Enable deployment without epmd
+## (requires changing both vm.args and remote.vm.args)
+##-start_epmd false -erl_epmd_port 6789

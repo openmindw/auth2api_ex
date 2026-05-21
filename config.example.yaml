@@ -1,0 +1,48 @@
+host: ""
+port: 8318
+
+# Directory to store OAuth tokens
+auth-dir: "~/.auth2api_ex"
+
+# API keys for client authentication (clients use these to access this proxy)
+api-keys:
+  - "your-api-key-here"
+
+# Admin dashboard credentials.
+# If omitted or left empty, the application will auto-generate secure random credentials on startup.
+admin:
+  username: "admin"
+  password: "change-me"
+
+# Maximum JSON request body size
+body-limit: "200mb"
+
+# Upstream request timeouts
+timeouts:
+  messages-ms: 120000         # non-stream /v1/messages timeout
+  stream-messages-ms: 600000  # stream /v1/messages timeout, suitable for Claude Code long tasks
+  count-tokens-ms: 30000      # /v1/messages/count_tokens timeout
+
+# Debug logging level:
+# off = no extra logs
+# errors = upstream/network failure details
+# verbose = errors + per-request access logs
+debug: "off"
+
+# OpenAI Images API configuration
+images:
+  default-model: "gpt-image-2"         # default model for image generation
+  upstream-codex-model: "gpt-5.4-mini" # Codex model used for image tool calls
+  max-image-bytes: 20971520            # max single image size in bytes
+  max-upload-bytes: 20971520           # max total upload size in bytes
+  pointer-retry-count: 8               # retry count for file-service/sediment pointers
+  pointer-retry-delay-ms: 750          # delay between pointer retries
+  edits-oauth-max-n: 1                 # max n value for OAuth edits endpoint
+
+# Request fingerprinting — controls how auth2api_ex mimics Claude Code CLI
+cloaking:
+  # CLI version to impersonate (default: 2.1.88)
+  cli-version: "2.1.88"
+
+  # Entrypoint for billing attribution (default: cli)
+  entrypoint: "cli"

@@ -1,0 +1,130 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: build-${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: linux-amd64
+          - os: ubuntu-24.04-arm
+            target: linux-arm64
+          - os: macos-13
+            target: darwin-amd64
+          - os: macos-latest
+            target: darwin-arm64
+
+    env:
+      MIX_ENV: prod
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.19"
+          otp-version: "28"
+
+      - name: Restore deps cache
+        uses: actions/cache@v4
+        with:
+          path: deps
+          key: deps-prod-${{ matrix.target }}-${{ hashFiles('mix.lock') }}
+          restore-keys: |
+            deps-prod-${{ matrix.target }}-
+
+      - name: Get deps
+        run: mix deps.get --only prod
+
+      - name: Read version from mix.exs
+        id: version
+        run: |
+          VSN=$(sed -n 's/.*version: *"\([^"]*\)".*/\1/p' mix.exs)
+          echo "app_version=${VSN}" >> $GITHUB_OUTPUT
+          echo "App version: ${VSN}"
+
+      - name: Write version.json
+        run: |
+          mkdir -p priv
+          TAG_VERSION="${GITHUB_REF_NAME}"
+          if [[ "${GITHUB_REF_TYPE}" == "branch" ]]; then
+            TAG_VERSION="dev-${GITHUB_SHA:0:7}"
+          fi
+          cat > priv/version.json <<JSONEOF
+          {
+            "app": "auth2api_ex",
+            "version": "${TAG_VERSION}",
+            "git_commit": "${GIT_COMMIT}",
+            "build_time": "$(date -u '+%Y-%m-%dT%H:%M:%SZ')",
+            "target": "${TARGET}"
+          }
+          JSONEOF
+        env:
+          GIT_COMMIT: ${{ github.sha }}
+          TARGET: ${{ matrix.target }}
+
+      - name: Compile
+        run: mix compile
+
+      - name: Build release
+        run: mix release --overwrite
+
+      - name: Package
+        run: |
+          TAG_NAME="${GITHUB_REF_NAME}"
+          if [[ "${GITHUB_REF_TYPE}" == "branch" ]]; then
+            TAG_NAME="dev-${GITHUB_SHA:0:7}"
+          fi
+          ASSET="auth2api_ex-${TARGET}.tar.gz"
+          cd _build/prod/rel/auth2api_ex
+          tar -czf "${ASSET}" .
+          sha256sum "${ASSET}" > "${ASSET}.sha256"
+          echo "=== ${TARGET} ==="
+          echo "asset: ${ASSET}"
+          cat "${ASSET}.sha256"
+          mkdir -p /tmp/artifacts
+          cp ${ASSET} ${ASSET}.sha256 /tmp/artifacts/
+        env:
+          TARGET: ${{ matrix.target }}
+
+      - name: Upload artifacts (main branch)
+        if: github.ref_type == 'branch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: auth2api_ex-${{ matrix.target }}
+          path: /tmp/artifacts/*
+
+      - name: Upload to GitHub Release (tag only)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          body: |
+            ## Assets
+
+            | Platform | Asset |
+            |----------|-------|
+            | Linux amd64 | `auth2api_ex-linux-amd64.tar.gz` |
+            | Linux arm64 | `auth2api_ex-linux-arm64.tar.gz` |
+            | macOS amd64 | `auth2api_ex-darwin-amd64.tar.gz` |
+            | macOS arm64 | `auth2api_ex-darwin-arm64.tar.gz` |
+          files: |
+            /tmp/artifacts/auth2api_ex-${{ matrix.target }}.tar.gz
+            /tmp/artifacts/auth2api_ex-${{ matrix.target }}.tar.gz.sha256

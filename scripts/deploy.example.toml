@@ -1,0 +1,43 @@
+# scripts/deploy.example.toml — public template for auth2api_ex-elixir deployment
+#
+# Use this file as the starting point for your private scripts/deploy.toml.
+# The deploy script still accepts --config <path.toml> so you can keep the
+# real deployment parameters outside the public repository.
+#
+# Usage:
+#   elixir scripts/deploy.exs                       # full deploy
+#   elixir scripts/deploy.exs --rollback            # rollback one version
+#   elixir scripts/deploy.exs --config <path.toml>  # use a custom config
+#
+# Notes:
+#   - ~/.auth2api_ex-elixir/ (OAuth tokens + accounts) is preserved across deploys.
+#   - Only one previous release is kept for rollback.
+
+[deploy]
+target = "ssh"  # "ssh" | "gcloud"
+
+[ssh]
+host = "your-host.example.com"
+port = 22
+user = "root"
+key  = "/path/to/your/private/key"
+
+[gcloud]
+project  = "your-project-id"
+zone     = "your-zone"
+instance = "your-instance-name"
+
+[app]
+name       = "auth2api_ex-elixir"
+release    = "auth2api_ex"
+deploy_dir = "/opt/auth2api_ex-elixir"
+env_file   = ".env.prod"
+
+[systemd]
+service = "auth2api_ex-elixir.service"
+
+[caddy]
+enabled  = false
+domain   = "auth2api_ex.example.com"
+email    = "admin@example.com"
+upstream_port = 8318
