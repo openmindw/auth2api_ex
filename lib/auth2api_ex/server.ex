@@ -160,6 +160,29 @@ defmodule Auth2ApiEx.Server do
     end
   end
 
+  # ── Codex WebSocket (file sync) ──
+
+  get "/v1/responses" do
+    conn = require_api_key(conn)
+
+    if conn.halted do
+      conn
+    else
+      upgrade_header = Plug.Conn.get_req_header(conn, "upgrade") |> List.first() |> to_string() |> String.downcase()
+
+      if upgrade_header == "websocket" do
+        config = conn.assigns[:config]
+        registry = conn.assigns[:registry]
+
+        conn
+        |> Plug.Conn.upgrade_adapter(:websocket, {Auth2ApiEx.Handlers.CodexWS, %{config: config, registry: registry}, %{idle_timeout: 300_000}})
+        |> Plug.Conn.halt()
+      else
+        send_json(conn, 426, %{error: %{message: "Upgrade Required"}})
+      end
+    end
+  end
+
   # ── Catch-all ──
 
   match _ do

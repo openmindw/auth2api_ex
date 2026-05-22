@@ -29,6 +29,7 @@ defmodule Auth2ApiEx.MixProject do
       {:req, "~> 0.5"},
       {:ezstd, "~> 1.2"},
       {:uuid, "~> 1.1"},
+      {:websockex, "~> 0.4"},
       {:mox, "~> 1.0", only: :test}
     ]
   end
