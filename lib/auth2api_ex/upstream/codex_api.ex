@@ -27,7 +27,14 @@ defmodule Auth2ApiEx.Upstream.CodexAPI do
     account = Keyword.fetch!(opts, :account)
     config = Keyword.fetch!(opts, :config)
 
-    normalized = normalize_body(body)
+    # Only apply full normalization when the body hasn't been pre-processed
+    # by the caller (e.g., handle_codex_responses already uses minimal_responses_body).
+    normalized =
+      if Keyword.get(opts, :skip_normalize, false) do
+        body
+      else
+        normalize_body(body)
+      end
     # If the body contains prompt_cache_key, reuse it as the upstream session
     # key so ChatGPT/Codex sees a stable session id. Short client keys are
     # preserved; overlong keys are compressed to fit the upstream limit.

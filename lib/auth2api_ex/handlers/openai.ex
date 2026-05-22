@@ -306,7 +306,8 @@ defmodule Auth2ApiEx.Handlers.OpenAI do
             account: account,
             config: config,
             stream: stream,
-            api_key_hash: SessionKey.api_key_hash(conn)
+            api_key_hash: SessionKey.api_key_hash(conn),
+            skip_normalize: true
           ] ++ opts
         )
       end,
