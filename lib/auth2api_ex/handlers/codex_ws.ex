@@ -61,7 +61,7 @@ defmodule Auth2ApiEx.Handlers.CodexWS do
             upstream_pid: nil
           }
 
-          {:cowboy_websocket, req, state, %{idle_timeout: 300_000}}
+          {:cowboy_websocket, req, state, %{idle_timeout: 300_000, max_frame_size: 16_777_216}}
       end
     end
   end
