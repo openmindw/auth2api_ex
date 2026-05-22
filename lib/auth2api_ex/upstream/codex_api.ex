@@ -65,7 +65,14 @@ defmodule Auth2ApiEx.Upstream.CodexAPI do
       headers: headers,
       json: normalized,
       receive_timeout: timeout_ms,
-      connect_options: [timeout: 30_000, protocols: [:http1]]
+      connect_options: [
+        timeout: 30_000,
+        protocols: [:http1]
+      ],
+      # Prevent connection reuse — a stuck HTTP/1.1 stream must not
+      # block subsequent requests waiting for the same pooled connection.
+      pool_max_idle_time: 0,
+      pool_timeout: 10_000
     ]
 
     req_opts = if stream, do: Keyword.put(req_opts, :into, :self), else: req_opts

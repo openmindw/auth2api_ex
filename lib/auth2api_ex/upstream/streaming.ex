@@ -66,7 +66,8 @@ defmodule Auth2ApiEx.Upstream.Streaming do
             write_chunk,
             usage,
             SSEParser.new_state(),
-            false
+            false,
+            Keyword.get(opts, :receive_timeout, @receive_timeout)
           )
 
         body when is_binary(body) ->
@@ -92,11 +93,11 @@ defmodule Auth2ApiEx.Upstream.Streaming do
 
   # ── Incremental receive loop (matches Node.js chunk-by-chunk reader) ──
 
-  defp receive_loop(ref, upstream, conn, on_event, write_chunk_fn, usage, sse_state, disconnected) do
+  defp receive_loop(ref, upstream, conn, on_event, write_chunk_fn, usage, sse_state, disconnected, timeout_ms \\ @receive_timeout) do
     receive do
       {^ref, {:data, data}} ->
         if disconnected do
-          receive_loop(ref, upstream, conn, on_event, write_chunk_fn, usage, sse_state, true)
+          receive_loop(ref, upstream, conn, on_event, write_chunk_fn, usage, sse_state, true, timeout_ms)
         else
           # In passthrough mode (no on_event), forward raw data immediately
           {conn, disconnected} =
@@ -135,7 +136,8 @@ defmodule Auth2ApiEx.Upstream.Streaming do
             write_chunk_fn,
             new_usage,
             new_sse_state,
-            disconnected
+            disconnected,
+            timeout_ms
           )
         end
 
@@ -167,10 +169,10 @@ defmodule Auth2ApiEx.Upstream.Streaming do
             %{conn: conn, completed: false, client_disconnected: true, usage: usage}
         end
     after
-      @receive_timeout ->
+      timeout_ms ->
         cancel_async(upstream)
         require Logger
-        Logger.error("[stream] upstream timeout after #{@receive_timeout}ms")
+        Logger.error("[stream] upstream timeout after #{timeout_ms}ms")
         # Write SSE error event on timeout
         sse_error = "event: error\ndata: #{Jason.encode!(%{message: "upstream timeout"})}\n\n"
         case do_write_chunk(write_chunk_fn, conn, sse_error) do
